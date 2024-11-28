@@ -1,0 +1,231 @@
+&FORCE_EVAL
+    METHOD  ${METHOD}
+
+    &MIXED
+        GROUP_PARTITION 32 64
+        MIXING_TYPE GENMIX
+        &GENERIC
+            # X: Energy force_eval 2 (X )
+            # Y: Energy force_eval 3 (X-)
+            MIXING_FUNCTION (1-k)*X+k*Y
+            VARIABLES X Y
+            PARAMETERS k  
+            VALUES ${LAMBDA} 
+        &END
+        &PRINT
+            &DIPOLE OFF
+            &END
+        &END
+    &END MIXED
+
+    &DFT     
+        BASIS_SET_FILE_NAME ${data}/GTH_BASIS_SETS 
+        POTENTIAL_FILE_NAME ${data}/GTH_POTENTIALS 
+        WFN_RESTART_FILE_NAME ./RESTART-${a}.wfn 
+@IF ${a}==1
+        CHARGE  0
+        UKS F
+@ENDIF
+@IF ${a}==2
+        CHARGE  -1
+        UKS T
+@ENDIF
+
+#        &AUXILIARY_DENSITY_MATRIX_METHOD
+#            METHOD BASIS_PROJECTION
+#            ADMM_PURIFICATION_METHOD MO_DIAG # NONE
+#        &END
+        &MGRID 
+            CUTOFF 500
+            REL_CUTOFF 60
+            NGRIDS 4
+        &END MGRID
+        &QS     
+            EPS_DEFAULT 1.0E-12      
+            EPS_PGF_ORB 1.0E-15
+            EXTRAPOLATION ASPC 
+            EXTRAPOLATION_ORDER 0 
+        &END QS
+        &SCF    
+            CHOLESKY INVERSE_DBCSR
+            SCF_GUESS RESTART        
+            EPS_SCF 1.0E-7
+            MAX_SCF 20
+            MAX_SCF_HISTORY 3
+            &OUTER_SCF
+                EPS_SCF 1.0E-7
+                MAX_SCF 50
+            &END  
+            &OT   
+                #SAFE_DIIS OFF
+                MINIMIZER  DIIS  
+                PRECONDITIONER FULL_SINGLE_INVERSE
+@IF ${a}==1
+                ENERGY_GAP 0.1
+@ENDIF
+@IF ${a}==2
+                ENERGY_GAP 0.1
+@ENDIF
+            &END 
+            &PRINT
+                &RESTART
+                    FILENAME =RESTART-${a}.wfn
+                    BACKUP_COPIES 1
+                &END RESTART
+            &END PRINT
+        &END SCF
+        &XC    
+            &XC_FUNCTIONAL BLYP      
+            &END XC_FUNCTIONAL
+            &XC_GRID
+                XC_SMOOTH_RHO NN50
+                XC_DERIV NN50_SMOOTH
+            &END
+
+            &vdW_POTENTIAL
+                DISPERSION_FUNCTIONAL PAIR_POTENTIAL
+                &PAIR_POTENTIAL
+                    TYPE DFTD3
+                    PARAMETER_FILE_NAME ${data}/dftd3.dat
+                    REFERENCE_FUNCTIONAL BLYP
+                &END PAIR_POTENTIAL
+            &END vdW_POTENTIAL      
+        &END XC 
+        &PRINT
+@IF ${a}==2    
+#      &E_DENSITY_CUBE
+#        &EACH
+#         MD 100
+#        &END EACH
+#      &END E_DENSITY_CUBE
+@ENDIF
+     &END PRINT
+     &END DFT  
+
+     &SUBSYS
+         &CELL
+             ABC [angstrom] 14.217 14.217 14.217
+         &END CELL
+         &COORD
+@include "xyz.coord"            
+         &END COORD
+         &TOPOLOGY
+             #CONNECTIVITY UPSF
+             #CONN_FILE_NAME ./1.psf
+             &DUMP_PSF
+             &END DUMP_PSF
+             CONNECTIVITY MOL_SET
+             &MOL_SET
+                &MOLECULE
+                    CONN_FILE_FORMAT PSF
+                    CONN_FILE_NAME h2o.psf
+                    NMOL 87
+                &END
+                &MOLECULE
+                    CONN_FILE_FORMAT UPSF
+                    CONN_FILE_NAME tfsi.psf
+                    NMOL 1
+                &END
+                &MOLECULE
+                    CONN_FILE_FORMAT PSF
+                    CONN_FILE_NAME li.psf
+                    NMOL 1
+                &END
+             &END MOL_SET
+         &END TOPOLOGY
+        #H2O
+        &COLVAR
+            &DISTANCE
+                ATOMS  1  2
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS  1  3
+            &END DISTANCE
+        &END COLVAR
+        
+        #TFSI
+        &COLVAR
+            &DISTANCE
+                ATOMS 1   3 
+            &END DISTANCE
+        &END COLVAR
+
+        &COLVAR
+            &DISTANCE
+                ATOMS 1   2 
+            &END DISTANCE
+        &END COLVAR
+
+        &COLVAR
+            &DISTANCE
+                ATOMS 2   4 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 3   7 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 4  10 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 4  11 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 4  12 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 7  14 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 7  13 
+            &END DISTANCE
+        &END COLVAR
+        &COLVAR
+            &DISTANCE
+                ATOMS 7  15 
+            &END DISTANCE
+        &END COLVAR
+
+         &KIND O
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q6
+         &END KIND
+         &KIND H
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q1
+         &END KIND
+         &KIND C
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q4
+         &END KIND
+         &KIND N
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q5
+         &END KIND
+         &KIND F
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q7
+         &END KIND
+         &KIND S
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q6
+         &END KIND
+         &KIND Li
+             BASIS_SET DZVP-GTH
+             POTENTIAL GTH-BLYP-q3
+         &END KIND
+     &END SUBSYS
+&END FORCE_EVAL

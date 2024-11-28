@@ -1,0 +1,193 @@
+## generic parameters
+@SET a 0
+@SET LAMBDA 0.5
+@SET PROJECT_NAME reduction-0.58-0.50
+@SET data /data/fengw/data
+@SET RESTART 1
+@SET k_res 0.05
+
+&GLOBAL
+    PROJECT ${PROJECT_NAME}
+    RUN_TYPE MD 
+    PRINT_LEVEL medium 
+    FLUSH_SHOULD_FLUSH T
+    WALLTIME 86400
+&END GLOBAL
+
+&MULTIPLE_FORCE_EVALS
+    FORCE_EVAL_ORDER 1 2 3
+    MULTIPLE_SUBSYS T
+&END MULTIPLE_FORCE_EVALS
+
+@SET METHOD MIXED
+@include setup.inp
+
+@SET METHOD QS
+@SET a 1
+@include setup.inp
+
+@SET METHOD QS
+@SET a 2
+@include setup.inp
+
+&MOTION
+  &CONSTRAINT
+      &COLLECTIVE
+          TARGET   1.89
+          MOLECULE 1
+          COLVAR 1
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET   1.89
+          MOLECULE 1
+          COLVAR 2
+          &RESTRAINT
+              k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.655
+          MOLECULE 2
+          COLVAR 3
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.655
+          MOLECULE 2
+          COLVAR 4
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.965
+          MOLECULE 2
+          COLVAR 5
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.965
+          MOLECULE 2
+          COLVAR 6
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 7
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 8
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 9
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 10
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 11
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+      &COLLECTIVE
+          TARGET [angstrom] 1.355
+          MOLECULE 2
+          COLVAR 12
+          &RESTRAINT
+            k ${k_res}
+          &END RESTRAINT
+      &END COLLECTIVE
+  &END CONSTRAINT
+    &MD
+        ENSEMBLE LANGEVIN
+        &LANGEVIN
+            GAMMA 0.001   # 0
+            NOISY_GAMMA 2.2E-4
+        &END LANGEVIN
+        &THERMAL_REGION
+            DO_LANGEVIN_DEFAULT TRUE
+            #&PRINT 
+            #    &TEMPERATURE
+            #    &END
+            #    &LANGEVIN_REGIONS
+            #        FILENAME __STD_OUT__
+            #    &END LANGEVIN_REGIONS
+            #&END PRINT
+            #&DEFINE_REGION       
+            #    TEMPERATURE 450          
+            #    NOISY_GAMMA_REGION 2.2E-4
+            #    LIST 1..394
+            #&END DEFINE_REGION
+        &END THERMAL_REGION            
+            TIMESTEP 0.5
+            STEPS 30000000
+            TEMPERATURE 330
+            TEMP_KIND
+
+    &END MD
+    &PRINT
+        &TRAJECTORY
+            &EACH
+                MD 1
+            &END EACH
+        &END TRAJECTORY
+        &VELOCITIES
+            &EACH
+                MD 1
+            &END EACH
+        &END VELOCITIES
+        &FORCES
+            &EACH
+                MD 1
+            &END EACH
+        &END FORCES
+        &RESTART_HISTORY OFF
+        &END RESTART_HISTORY
+        &RESTART
+            BACKUP_COPIES 1
+            &EACH
+                MD 1
+            &END EACH
+        &END RESTART
+        #&STRESS
+        #&END STRESS
+    &END PRINT
+&END MOTION 
+ 
+@if ${RESTART} == 1
+&EXT_RESTART
+    RESTART_FILE_NAME ./${PROJECT_NAME}-1.restart
+#    #RESTART_COUNTERS False
+&END EXT_RESTART
+@endif

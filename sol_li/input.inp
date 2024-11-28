@@ -1,0 +1,102 @@
+@SET PROJECT_NAME sol_0.58
+@SET RESTART 1
+@SET data /data/fengw/data
+@SET LAMBDA 0.5
+
+@SET a 0
+
+@SET a1 27
+@SET a2 28
+@SET mm 1
+
+&GLOBAL
+  PROJECT ${PROJECT_NAME}
+  RUN_TYPE MD 
+  PRINT_LEVEL medium 
+  WALLTIME 864000
+&END GLOBAL
+
+&MULTIPLE_FORCE_EVALS
+  FORCE_EVAL_ORDER 1 2 3 4
+  MULTIPLE_SUBSYS T
+&END
+
+@SET method MIXED
+@include 'setup.inp'
+
+@SET method QS
+@SET a 1
+@include 'setup.inp'
+
+@SET method QS
+@SET a 2
+@include 'setup.inp'
+
+@SET method FIST
+@include 'setup.inp'
+
+&MOTION
+    &MD   
+        ENSEMBLE LANGEVIN
+        &LANGEVIN             
+            GAMMA 0.001   # 0     
+            NOISY_GAMMA 2.2E-4
+        &END LANGEVIN
+        &THERMAL_REGION
+            DO_LANGEVIN_DEFAULT TRUE
+        #    &PRINT 
+        #        &TEMPERATURE
+        #        &END
+        #        &LANGEVIN_REGIONS
+        #            FILENAME __STD_OUT__
+        #        &END LANGEVIN_REGIONS
+        #    &END PRINT
+        #    &DEFINE_REGION       
+        #        TEMPERATURE 450          
+        #        NOISY_GAMMA_REGION 2.2E-4
+        #        LIST 1..394
+        #    &END DEFINE_REGION
+        &END THERMAL_REGION            
+        TIMESTEP 0.5
+        STEPS 30000000
+        TEMPERATURE 330
+        TEMP_KIND
+    &END MD
+    &PRINT
+        &TRAJECTORY
+            &EACH
+                MD 1
+            &END EACH
+        &END TRAJECTORY
+        &VELOCITIES
+            &EACH
+                MD 1
+            &END EACH
+        &END VELOCITIES
+        &FORCES
+            &EACH
+                MD 1
+            &END EACH
+        &END FORCES
+        &RESTART_HISTORY
+            &EACH
+                MD 1000
+            &END EACH
+        &END RESTART_HISTORY
+        &RESTART
+            BACKUP_COPIES 2
+            &EACH
+                MD 1
+            &END EACH
+        &END RESTART
+        #&STRESS
+        #&END STRESS
+    &END PRINT
+&END MOTION
+
+@if ${RESTART} == 1
+&EXT_RESTART
+    RESTART_FILE_NAME ${PROJECT_NAME}-1.restart
+    #RESTART_COUNTERS False
+&END EXT_RESTART
+@endif 

@@ -1,0 +1,156 @@
+&FORCE_EVAL
+    METHOD ${method}
+
+    &MIXED
+        GROUP_PARTITION ${a1} ${a2} ${mm}
+        MIXING_TYPE GENMIX
+        &GENERIC
+            MIXING_FUNCTION (1-k)*X+k*(Y+Z)
+            VARIABLES X Y Z
+            PARAMETERS k
+            VALUES ${LAMBDA}
+        &END GENERIC
+        &PRINT
+            &DIPOLE OFF
+            &END DIPOLE
+        &END PRINT
+    &END MIXED 
+
+    &DFT
+        BASIS_SET_FILE_NAME ${data}/GTH_BASIS_SETS
+        POTENTIAL_FILE_NAME ${data}/GTH_POTENTIALS
+        WFN_RESTART_FILE_NAME ./RESTART-${a}.wfn
+
+@IF ${a}==1
+        CHARGE +1
+        UKS F
+@ENDIF
+
+@IF ${a}==2
+        CHARGE 0
+        UKS F
+@ENDIF
+        &MGRID 
+            CUTOFF 500
+            REL_CUTOFF 60
+            NGRIDS 4
+        &END MGRID
+        &QS     
+            EPS_DEFAULT 1.0E-12
+            EPS_PGF_ORB 1.0E-15
+            EXTRAPOLATION ASPC
+            EXTRAPOLATION_ORDER 0    
+        &END QS
+        &SCF    
+            CHOLESKY INVERSE_DBCSR
+            SCF_GUESS RESTART        
+            EPS_SCF 1.0E-7
+            MAX_SCF 20
+            MAX_SCF_HISTORY 3
+            &OUTER_SCF
+                EPS_SCF 1.0E-7
+                MAX_SCF 50
+            &END  
+            &OT   
+                MINIMIZER DIIS
+                PRECONDITIONER FULL_SINGLE_INVERSE
+                ENERGY_GAP 0.1      
+            &END 
+            &PRINT
+                &RESTART
+                    FILENAME =RESTART-${a}.wfn
+                &END RESTART
+            &END PRINT
+        &END SCF
+        &XC
+            &XC_FUNCTIONAL BLYP
+            &END XC_FUNCTIONAL
+            &XC_GRID
+                XC_SMOOTH_RHO NN50
+                XC_DERIV NN50_SMOOTH    
+            &END
+
+            &vdW_POTENTIAL
+                DISPERSION_FUNCTIONAL PAIR_POTENTIAL
+                &PAIR_POTENTIAL
+                    TYPE DFTD3
+                    PARAMETER_FILE_NAME ${data}/dftd3.dat
+                    REFERENCE_FUNCTIONAL BLYP
+                &END PAIR_POTENTIAL
+            &END vdW_POTENTIAL
+        &END XC
+    &END DFT
+  
+    &MM
+        &FORCEFIELD
+@include "ff.inp"
+        &END FORCEFIELD
+        &POISSON
+            &EWALD
+                EWALD_TYPE SPME
+                ALPHA .35
+                GMAX 24
+                O_SPLINE 6
+            &END EWALD
+        &END POISSON
+    &END MM
+ 
+    &SUBSYS
+        &CELL
+            ABC 14.217 14.217 14.217
+            PERIODIC XYZ
+        &END CELL
+        &COORD
+@include 'xyz.coord'
+        &END COORD
+@IF ${a}==1
+        &KIND Li1
+            ELEMENT Li
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q3
+        &END KIND
+@ENDIF
+@IF ${a}==2
+        &KIND Li1
+            ELEMENT Li
+            BASIS_SET NONE
+            POTENTIAL GTH-BLYP-q3
+            GHOST T
+        &END KIND
+@ENDIF
+        &KIND Li
+            ELEMENT Li
+            BASIS_SET DZVP-GTH 
+            POTENTIAL GTH-BLYP-q3
+        &END KIND
+        &KIND O
+            ELEMENT O
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q6
+        &END KIND
+        &KIND H
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q1
+        &END KIND
+        &KIND C
+            ELEMENT C
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q4
+        &END KIND
+        &KIND N
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q5
+        &END KIND
+        &KIND F
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q7
+        &END KIND
+        &KIND S
+            BASIS_SET DZVP-GTH
+            POTENTIAL GTH-BLYP-q6
+        &END KIND
+
+        &TOPOLOGY
+        &END TOPOLOGY
+    &END SUBSYS
+&END FORCE_EVAL

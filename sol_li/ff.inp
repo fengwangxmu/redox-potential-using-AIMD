@@ -1,0 +1,71 @@
+            DO_NONBONDED T
+            IGNORE_MISSING_CRITICAL_PARAMS
+            &CHARGE
+                ATOM Li
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM Li1
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM O
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM H
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM C
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM F
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM N
+                CHARGE 0
+            &END CHARGE
+            &CHARGE
+                ATOM S
+                CHARGE 0
+            &END CHARGE
+            &NONBONDED
+                &LENNARD-JONES
+                    ATOMS Li1 Li
+                    EPSILON 80.583
+                    SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                    ATOMS Li1 O
+                    EPSILON 80.583
+                    SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                    ATOMS Li1 H
+                    EPSILON 80.583
+                    SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                    ATOMS Li1 C
+                    EPSILON 80.583
+                    SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                    ATOMS Li1 F
+                    EPSILON 80.583
+                    SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                 ATOMS Li1 N
+                 EPSILON 80.583
+                 SIGMA 2.337
+                &END LENNARD-JONES
+                &LENNARD-JONES
+                 ATOMS Li1 S
+                 EPSILON 80.583
+                 SIGMA 2.337
+                &END LENNARD-JONES
+            &END NONBONDED
